@@ -194,12 +194,9 @@ GameObject:
   - component: {fileID: 1747392158523046073}
   - component: {fileID: 8095809552211503003}
   - component: {fileID: 1711546874355582177}
-  - component: {fileID: 5089308365693392526}
-  - component: {fileID: 1968340557073526473}
-  - component: {fileID: 2886926204748740631}
-  - component: {fileID: 1415970068575968065}
+  - component: {fileID: 7511235931167070483}
   m_Layer: 14
-  m_Name: CardPrefab
+  m_Name: UnitCardPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -337,11 +334,11 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 0
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 126
   m_CollisionDetection: 0
---- !u!114 &5089308365693392526
+--- !u!114 &7511235931167070483
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -350,60 +347,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 6332109504812327195}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 557c1287071b147459bb6f001560c6e2, type: 3}
+  m_Script: {fileID: 11500000, guid: 081e38ebadbc64dd3b2544ef3d2da376, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: ClusterVR.CreatorKit.Item.Implements::ClusterVR.CreatorKit.Item.Implements.MovableItem
-  item: {fileID: 8095809552211503003}
-  rb: {fileID: 1711546874355582177}
---- !u!114 &1968340557073526473
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6332109504812327195}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ce108e3354c62c345a1cbcdf1f965e21, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ClusterVR.CreatorKit.Item.Implements::ClusterVR.CreatorKit.Item.Implements.GrabbableItem
-  movableItem: {fileID: 5089308365693392526}
-  grip: {fileID: 0}
---- !u!114 &2886926204748740631
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6332109504812327195}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ee94dea012ba844e491dff08750fb7f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CardController
+  m_EditorClassIdentifier: Assembly-CSharp::UnitCardController
   textMeshPro: {fileID: 6446637661051406811}
   cardRenderer: {fileID: 8790664905817934599}
---- !u!114 &1415970068575968065
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6332109504812327195}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f90a8458122ef47c3b840e286a75994a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ClusterVR.CreatorKit.Trigger.Implements::ClusterVR.CreatorKit.Trigger.Implements.OnCreateItemTrigger
-  item: {fileID: 8095809552211503003}
-  triggers:
-  - target: 0
-    specifiedTargetItem: {fileID: 0}
-    key: SpawnMove
-    type: 0
-    value:
-      boolValue: 0
-      floatValue: 0
-      integerValue: 0
-      vector2Value: {x: 0, y: 0}
-      vector3Value: {x: 0, y: 0, z: 0}

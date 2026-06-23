@@ -37,7 +37,7 @@ public class CardController : MonoBehaviour
     }
 
     // 🖱️ 手札カードをクリックしたときの処理
-    public void OnInteract()
+    private void OnMouseDown()
     {
         // このカードを「移動対象（選択状態）」として記録する
         SelectedCard = this;

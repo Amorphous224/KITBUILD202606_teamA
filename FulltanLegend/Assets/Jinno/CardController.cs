@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using System.Collections.Generic; // 💡 リストを使うために追加
 
 public class CardController : MonoBehaviour
 {
@@ -8,6 +9,14 @@ public class CardController : MonoBehaviour
 
     [SerializeField] private TextMeshPro textMeshPro;
     [SerializeField] private Renderer cardRenderer;
+
+    // 💡 --------------------------------------------------
+    // 【新機能】画像を表示するためのコンポーネントをセットする枠
+    [SerializeField] private SpriteRenderer imageRenderer; 
+
+    // 【新機能】インスペクターでPNG画像を登録するリストの枠
+    [SerializeField] private List<Sprite> cardImages; 
+    // --------------------------------------------------
 
     private static int cardCount = 0;
     private static int fieldEffectCardCount = 0;
@@ -19,9 +28,26 @@ public class CardController : MonoBehaviour
 
     void Start()
     {
-        // もともとの左にずれていく配置
+        // 💡 もしすでに手札が8枚（0〜7）あったら、これ以上生成せずに自分を消す
+         if (cardCount >= 8) {
+        Destroy(gameObject);
+        return;
+        }
+        
         transform.position += new Vector3(cardCount * -0.3f, 0, 0);
         cardCount++;
+
+        // 💡 --------------------------------------------------
+        // 【新機能】もし画像が登録されていたら、ランダムに表示する
+        if (imageRenderer != null && cardImages != null && cardImages.Count > 0)
+        {
+            // リストの中からランダムな番号（index）を選ぶ
+            int randomImageIndex = Random.Range(0, cardImages.Count);
+            
+            // 選ばれた画像を、スプライトレンダラーにセットする
+            imageRenderer.sprite = cardImages[randomImageIndex];
+        }
+        // --------------------------------------------------
 
         if (textMeshPro == null || cardRenderer == null) return;
 
@@ -35,7 +61,7 @@ public class CardController : MonoBehaviour
         }
         else
         {
-            CurrentCardType = CardType.Effect; 
+            CurrentCardType = CurrentCardType = CardType.Effect; 
             int randomIndex = Random.Range(0, effectCards.Length);
             textMeshPro.text = effectCards[randomIndex];
             cardRenderer.material.color = new Color(1.0f, 0.8f, 0.0f);
@@ -64,10 +90,7 @@ public class CardController : MonoBehaviour
         Debug.Log($"学習カード『{textMeshPro.text}』を選択中");
     }
 
-    public static void ClearSelection()
-    {
-        SelectedCard = null;
-    }
+    public static void ClearSelection() { SelectedCard = null; }
 
     void OnDestroy()
     {

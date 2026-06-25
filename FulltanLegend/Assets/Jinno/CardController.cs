@@ -24,6 +24,8 @@ public class CardController : MonoBehaviour
     private string[] studyCards = new string[] { "出席", "レポート提出", "テスト勉強" };
     private string[] effectCards = new string[] { "勉強会", "先輩のアドバイス", "レポート未提出", "インフルエンザ", "徹夜", "過去問ゲット" };
 
+    private bool isPlacedOnField = false; 
+
     void Start()
     {
         if (cardCount >= 8) 
@@ -48,14 +50,14 @@ public class CardController : MonoBehaviour
             CurrentCardType = CardType.Study; 
             int randomIndex = Random.Range(0, studyCards.Length);
             textMeshPro.text = studyCards[randomIndex];
-            cardRenderer.material.color = new Color(0.0f, 0.4f, 1.0f); // 青色
+            cardRenderer.material.color = new Color(0.0f, 0.4f, 1.0f); 
         }
         else
         {
             CurrentCardType = CardType.Effect; 
             int randomIndex = Random.Range(0, effectCards.Length);
             textMeshPro.text = effectCards[randomIndex];
-            cardRenderer.material.color = new Color(1.0f, 0.8f, 0.0f); // 黄色
+            cardRenderer.material.color = new Color(1.0f, 0.8f, 0.0f); 
         }
     }
 
@@ -63,8 +65,7 @@ public class CardController : MonoBehaviour
     {
         confirmingStudyCard = this;
         currentTargetSlotName = slotName;
-
-        Debug.LogWarning($"★『{currentTargetSlotName}』の上に学習カード『{textMeshPro.text}』が置かれました！この単位を獲得エリア（CreditZone）に移動しますか？ 【 Y 】か【 N 】を押してください！");
+        Debug.LogWarning($"★『{currentTargetSlotName}』の上へ置かれました！【 Y 】か【 N 】を押してください！");
     }
 
     void Update()
@@ -78,13 +79,28 @@ public class CardController : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.N))
         {
-            Debug.Log($"『{textMeshPro.text}』による単位の獲得を見送りました。");
             ClearConfirmState();
         }
     }
 
     private void OnMouseDown()
     {
+        // 🌟【絶対に画面移行させない修正】
+        // Destroy を使うとUnityエディタがバグってScene画面に飛ぶため、
+        // オブジェクトを画面外の遥か彼方にワープさせ、非アクティブにして物理的に消去します。
+        if (isPlacedOnField)
+        {
+            Debug.Log($"場に出ていた効果カード『{textMeshPro.text}』を画面外へ除外しました。");
+            
+            // 判定を消し、見えない地下へ飛ばして完全に無効化する
+            Collider col = GetComponent<Collider>();
+            if (col != null) col.enabled = false;
+            
+            transform.position = new Vector3(0f, -1000f, 0f);
+            gameObject.SetActive(false); 
+            return;
+        }
+
         if (CurrentCardType == CardType.Effect)
         {
             GameObject zone = GameObject.FindWithTag("EffectZone");
@@ -95,7 +111,8 @@ public class CardController : MonoBehaviour
                 transform.rotation = zone.transform.rotation; 
                 
                 fieldEffectCardCount++;
-                Debug.Log($"効果カード『{textMeshPro.text}』を場に出した");
+                isPlacedOnField = true; 
+                Debug.Log($"効果カード『{textMeshPro.text}』を場に出しました。");
             }
             return;
         }
@@ -103,7 +120,6 @@ public class CardController : MonoBehaviour
         if (CurrentCardType == CardType.Study)
         {
             SelectedCard = this;
-            Debug.Log($"手札の学習カード『{textMeshPro.text}』を選択中...（テーブルのSlot（単位）をクリックしてください）");
             return;
         }
     }
@@ -115,41 +131,32 @@ public class CardController : MonoBehaviour
 
         if (creditZone != null && targetSlot != null)
         {
-            // 💡 1. 【エラー対策の要】Clusterスクリプトを100%排除した、純粋なUnityのCubeを動的生成！
             GameObject creditObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
             creditObject.name = "CreditCard_Object";
 
-            // 物理バグを防ぐため、コライダーを即座に削除
             Collider col = creditObject.GetComponent<Collider>();
             if (col != null) Destroy(col);
 
-            // 💡 2. 形状を「カードと同じサイズ（薄い直方体）」にプログラムで変形
-            // インスペクターのSlot1のサイズ(0.2, 0.1, 0.3)を参考に、カードっぽい薄さに調整
             creditObject.transform.localScale = new Vector3(0.2f, 0.01f, 0.3f); 
-
-            // 💡 3. 位置と回転をテーブル左下のCreditZoneに合わせる
-            // 獲得数に応じて左から右（X軸マイナス方向）へ綺麗に並べる
-            // 🔄 修正後：獲得数に応じて「上（Y軸）」へ少しずつ積み重ねる
             Vector3 spawnOffset = new Vector3(0f, 0.05f + (creditCardCount * 0.025f), 0f); 
             creditObject.transform.position = creditZone.transform.position + spawnOffset;
-            creditObject.transform.rotation = Quaternion.identity; // 正面を向かせる
+            creditObject.transform.rotation = Quaternion.identity; 
 
-            // 💡 4. 色を綺麗な赤色（獲得済み単位）にする
             Renderer objRenderer = creditObject.GetComponent<Renderer>();
-            if (objRenderer != null)
+            if (objRenderer != null) objRenderer.material.color = new Color(1.0f, 0.2f, 0.2f); 
+
+            if (ScoreManager.Instance != null)
             {
-                objRenderer.material.color = new Color(1.0f, 0.2f, 0.2f); 
+                ScoreManager.Instance.AddCredit(2); 
             }
 
-            // 💡 5. 【補充の処理】
-            // 元のSlot（台座）を「非表示（SetActive(false)）」にしないことで、
-            // 「無くなった場所に即座に新しい単位カードが補充され、常に5枚ある状態」を完全再現します！
-            Debug.Log($"『{currentTargetSlotName}』を獲得！その場に新しい単位が即座に補充されました。");
-
             creditCardCount++;
-
-            // コストとして使った手札の青いカードは奈落へ退避
-            transform.position = new Vector3(0f, -100f, 0f);
+            
+            // 使用済みの学習カードも同様に地下へワープさせて安全に消す
+            Collider myCol = GetComponent<Collider>();
+            if (myCol != null) myCol.enabled = false;
+            transform.position = new Vector3(0f, -1000f, 0f);
+            gameObject.SetActive(false);
         }
     }
 
@@ -161,9 +168,17 @@ public class CardController : MonoBehaviour
 
     public static void ClearSelection() { SelectedCard = null; }
 
-    void OnDestroy()
+    // シーン終了時に静的にクリアする処理のみ残す
+    void OnDisable()
     {
-        if (GameObject.FindObjectsByType<CardController>(FindObjectsSortMode.None).Length == 0)
+        // 全てのカードが非アクティブになったらカウンターをリセット
+        CardController[] allCards = GameObject.FindObjectsByType<CardController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        bool anyActive = false;
+        foreach (var c in allCards)
+        {
+            if (c.gameObject.activeSelf) anyActive = true;
+        }
+        if (!anyActive)
         {
             cardCount = 0;
             fieldEffectCardCount = 0;

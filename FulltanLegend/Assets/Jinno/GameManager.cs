@@ -2,39 +2,34 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] private GameObject unitCardPrefab; // 生成する単位カードのプレハブ
-    [SerializeField] private Transform[] slotPositions; // 5つの場の位置（配列）
+    public static GameManager Instance { get; private set; }
 
-    // 各スロットに現在置かれているカードを記録する配列
-    private GameObject[] currentCards = new GameObject[5];
+    [Header("---- 場のスロット管理 ----")]
+    [SerializeField] private GameObject unitCardPrefab; 
+    [SerializeField] private Transform[] slotPositions; 
+    private GameObject[] currentCards = new GameObject[5]; 
 
-    void Start()
+    private void Awake()
     {
-        // ゲーム開始時にすべてのスロットに単位カードを補充
-        for (int i = 0; i < slotPositions.Length; i++)
-        {
-            ReplenishCard(i);
-        }
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
     }
 
-    void Update()
+    private void Start()
     {
-        // アナログで獲得（カードが削除）されたら、空いた場所に自動補充する
-        for (int i = 0; i < slotPositions.Length; i++)
+        if (slotPositions != null)
         {
-            if (currentCards[i] == null)
+            for (int i = 0; i < slotPositions.Length; i++)
             {
                 ReplenishCard(i);
             }
         }
     }
 
-    // 指定された番号のスロットに新しく単位カードを生成する
-    private void ReplenishCard(int slotIndex)
+    public void ReplenishCard(int slotIndex)
     {
-        if (unitCardPrefab == null || slotPositions[slotIndex] == null) return;
-
-        // 指定されたスロットの位置と向きでカードを生成
+        if (unitCardPrefab == null || slotPositions == null || slotIndex >= slotPositions.Length || slotPositions[slotIndex] == null) return;
+        
         GameObject newCard = Instantiate(unitCardPrefab, slotPositions[slotIndex].position, slotPositions[slotIndex].rotation);
         currentCards[slotIndex] = newCard;
     }

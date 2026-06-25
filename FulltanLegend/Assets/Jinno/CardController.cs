@@ -28,10 +28,11 @@ public class CardController : MonoBehaviour
 
     void Start()
     {
-        // 💡 もしすでに手札が8枚（0〜7）あったら、これ以上生成せずに自分を消す
-         if (cardCount >= 8) {
-        Destroy(gameObject);
-        return;
+        // 💡 修正ポイント1: 他の処理より前に「枚数上限」を真っ先にチェックする！
+        if (cardCount >= 8) 
+        {
+            Destroy(gameObject);
+            return; // 💡 これより下の画像処理などを走らせずに即終了してエラーを防ぐ
         }
         
         transform.position += new Vector3(cardCount * -0.3f, 0, 0);
@@ -61,7 +62,8 @@ public class CardController : MonoBehaviour
         }
         else
         {
-            CurrentCardType = CurrentCardType = CardType.Effect; 
+            // 💡 修正ポイント2: 重複していた代入（CurrentCardType = CurrentCardType = ）を綺麗に修正
+            CurrentCardType = CardType.Effect; 
             int randomIndex = Random.Range(0, effectCards.Length);
             textMeshPro.text = effectCards[randomIndex];
             cardRenderer.material.color = new Color(1.0f, 0.8f, 0.0f);

@@ -1,25 +1,23 @@
 using UnityEngine;
 using TMPro;
-using System.Collections.Generic; // 💡 リストを使うために追加
+using System.Collections.Generic;
 
 public class CardController : MonoBehaviour
 {
-    public enum CardType { Study, Effect }
+    public enum CardType { Study, Effect, Credit } 
     public CardType CurrentCardType { get; private set; } 
 
     [SerializeField] private TextMeshPro textMeshPro;
     [SerializeField] private Renderer cardRenderer;
-
-    // 💡 --------------------------------------------------
-    // 【新機能】画像を表示するためのコンポーネントをセットする枠
     [SerializeField] private SpriteRenderer imageRenderer; 
-
-    // 【新機能】インスペクターでPNG画像を登録するリストの枠
     [SerializeField] private List<Sprite> cardImages; 
-    // --------------------------------------------------
 
     private static int cardCount = 0;
     private static int fieldEffectCardCount = 0;
+    private static int creditCardCount = 0; 
+
+    private static CardController confirmingStudyCard = null;
+    private static string currentTargetSlotName = "";
 
     public static CardController SelectedCard { get; private set; }
 
@@ -28,27 +26,19 @@ public class CardController : MonoBehaviour
 
     void Start()
     {
-        // 💡 修正ポイント1: 他の処理より前に「枚数上限」を真っ先にチェックする！
         if (cardCount >= 8) 
         {
-            Destroy(gameObject);
-            return; // 💡 これより下の画像処理などを走らせずに即終了してエラーを防ぐ
+            transform.position = new Vector3(0f, -100f, 0f);
+            return; 
         }
-        
         transform.position += new Vector3(cardCount * -0.3f, 0, 0);
         cardCount++;
 
-        // 💡 --------------------------------------------------
-        // 【新機能】もし画像が登録されていたら、ランダムに表示する
         if (imageRenderer != null && cardImages != null && cardImages.Count > 0)
         {
-            // リストの中からランダムな番号（index）を選ぶ
             int randomImageIndex = Random.Range(0, cardImages.Count);
-            
-            // 選ばれた画像を、スプライトレンダラーにセットする
             imageRenderer.sprite = cardImages[randomImageIndex];
         }
-        // --------------------------------------------------
 
         if (textMeshPro == null || cardRenderer == null) return;
 
@@ -58,15 +48,38 @@ public class CardController : MonoBehaviour
             CurrentCardType = CardType.Study; 
             int randomIndex = Random.Range(0, studyCards.Length);
             textMeshPro.text = studyCards[randomIndex];
-            cardRenderer.material.color = new Color(0.0f, 0.4f, 1.0f);
+            cardRenderer.material.color = new Color(0.0f, 0.4f, 1.0f); // 青色
         }
         else
         {
-            // 💡 修正ポイント2: 重複していた代入（CurrentCardType = CurrentCardType = ）を綺麗に修正
             CurrentCardType = CardType.Effect; 
             int randomIndex = Random.Range(0, effectCards.Length);
             textMeshPro.text = effectCards[randomIndex];
-            cardRenderer.material.color = new Color(1.0f, 0.8f, 0.0f);
+            cardRenderer.material.color = new Color(1.0f, 0.8f, 0.0f); // 黄色
+        }
+    }
+
+    public void TriggerUnitConfirmation(string slotName)
+    {
+        confirmingStudyCard = this;
+        currentTargetSlotName = slotName;
+
+        Debug.LogWarning($"★『{currentTargetSlotName}』の上に学習カード『{textMeshPro.text}』が置かれました！この単位を獲得エリア（CreditZone）に移動しますか？ 【 Y 】か【 N 】を押してください！");
+    }
+
+    void Update()
+    {
+        if (confirmingStudyCard != this) return;
+
+        if (Input.GetKeyDown(KeyCode.Y))
+        {
+            ExecuteGetCredit(); 
+            ClearConfirmState();
+        }
+        else if (Input.GetKeyDown(KeyCode.N))
+        {
+            Debug.Log($"『{textMeshPro.text}』による単位の獲得を見送りました。");
+            ClearConfirmState();
         }
     }
 
@@ -75,7 +88,6 @@ public class CardController : MonoBehaviour
         if (CurrentCardType == CardType.Effect)
         {
             GameObject zone = GameObject.FindWithTag("EffectZone");
-
             if (zone != null)
             {
                 Vector3 targetPosition = zone.transform.position + new Vector3(fieldEffectCardCount * 0.3f, 0f, -0.1f);
@@ -88,8 +100,63 @@ public class CardController : MonoBehaviour
             return;
         }
 
-        SelectedCard = this;
-        Debug.Log($"学習カード『{textMeshPro.text}』を選択中");
+        if (CurrentCardType == CardType.Study)
+        {
+            SelectedCard = this;
+            Debug.Log($"手札の学習カード『{textMeshPro.text}』を選択中...（テーブルのSlot（単位）をクリックしてください）");
+            return;
+        }
+    }
+
+    private void ExecuteGetCredit()
+    {
+        GameObject creditZone = GameObject.FindWithTag("CreditZone");
+        GameObject targetSlot = GameObject.Find(currentTargetSlotName);
+
+        if (creditZone != null && targetSlot != null)
+        {
+            // 💡 1. 【エラー対策の要】Clusterスクリプトを100%排除した、純粋なUnityのCubeを動的生成！
+            GameObject creditObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            creditObject.name = "CreditCard_Object";
+
+            // 物理バグを防ぐため、コライダーを即座に削除
+            Collider col = creditObject.GetComponent<Collider>();
+            if (col != null) Destroy(col);
+
+            // 💡 2. 形状を「カードと同じサイズ（薄い直方体）」にプログラムで変形
+            // インスペクターのSlot1のサイズ(0.2, 0.1, 0.3)を参考に、カードっぽい薄さに調整
+            creditObject.transform.localScale = new Vector3(0.2f, 0.01f, 0.3f); 
+
+            // 💡 3. 位置と回転をテーブル左下のCreditZoneに合わせる
+            // 獲得数に応じて左から右（X軸マイナス方向）へ綺麗に並べる
+            // 🔄 修正後：獲得数に応じて「上（Y軸）」へ少しずつ積み重ねる
+            Vector3 spawnOffset = new Vector3(0f, 0.05f + (creditCardCount * 0.025f), 0f); 
+            creditObject.transform.position = creditZone.transform.position + spawnOffset;
+            creditObject.transform.rotation = Quaternion.identity; // 正面を向かせる
+
+            // 💡 4. 色を綺麗な赤色（獲得済み単位）にする
+            Renderer objRenderer = creditObject.GetComponent<Renderer>();
+            if (objRenderer != null)
+            {
+                objRenderer.material.color = new Color(1.0f, 0.2f, 0.2f); 
+            }
+
+            // 💡 5. 【補充の処理】
+            // 元のSlot（台座）を「非表示（SetActive(false)）」にしないことで、
+            // 「無くなった場所に即座に新しい単位カードが補充され、常に5枚ある状態」を完全再現します！
+            Debug.Log($"『{currentTargetSlotName}』を獲得！その場に新しい単位が即座に補充されました。");
+
+            creditCardCount++;
+
+            // コストとして使った手札の青いカードは奈落へ退避
+            transform.position = new Vector3(0f, -100f, 0f);
+        }
+    }
+
+    private void ClearConfirmState()
+    {
+        confirmingStudyCard = null;
+        currentTargetSlotName = "";
     }
 
     public static void ClearSelection() { SelectedCard = null; }
@@ -100,6 +167,8 @@ public class CardController : MonoBehaviour
         {
             cardCount = 0;
             fieldEffectCardCount = 0;
+            creditCardCount = 0;
+            ClearConfirmState();
         }
     }
 }

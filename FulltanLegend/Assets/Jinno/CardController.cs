@@ -26,6 +26,10 @@ public class CardController : MonoBehaviour
 
     private bool isPlacedOnField = false; 
 
+    // 🌟【追加】元の大きさを記憶しておくための変数
+    private Vector3 originalScale;
+    private bool isHovered = false;
+
     void Start()
     {
         if (cardCount >= 8) 
@@ -61,8 +65,37 @@ public class CardController : MonoBehaviour
         }
     }
 
+    // 🌟【追加】マウスがカードに乗ったときの処理（拡大）
+    private void OnMouseEnter()
+    {
+        // すでに場に出されたカードや、確認状態の時は拡大しない
+        if (isPlacedOnField || confirmingStudyCard != null) return;
+
+        if (!isHovered)
+        {
+            isHovered = true;
+            originalScale = transform.localScale;
+            transform.localScale = originalScale * 1.5f; // 1.5倍に拡大
+            transform.position += new Vector3(0f, 0.1f, 0f); // わずかに上に浮かせて手前に出す
+        }
+    }
+
+    // 🌟【追加】マウスがカードから離れたときの処理（元に戻す）
+    private void OnMouseExit()
+    {
+        if (isHovered)
+        {
+            isHovered = false;
+            transform.localScale = originalScale; // 元のサイズに戻す
+            transform.position -= new Vector3(0f, 0.1f, 0f); // 元の高さに戻す
+        }
+    }
+
     public void TriggerUnitConfirmation(string slotName)
     {
+        // 確認画面に入る前に、ホバーの拡大状態を強制リセットしておく
+        if (isHovered) OnMouseExit();
+
         confirmingStudyCard = this;
         currentTargetSlotName = slotName;
         Debug.LogWarning($"★『{currentTargetSlotName}』の上へ置かれました！【 Y 】か【 N 】を押してください！");
@@ -103,6 +136,9 @@ public class CardController : MonoBehaviour
             GameObject zone = GameObject.FindWithTag("EffectZone");
             if (zone != null)
             {
+                // 場に出る時は拡大状態をリセットする
+                if (isHovered) OnMouseExit();
+
                 Vector3 targetPosition = zone.transform.position + new Vector3(fieldEffectCardCount * 0.3f, 0f, -0.1f);
                 transform.position = targetPosition;
                 transform.rotation = zone.transform.rotation; 
@@ -121,7 +157,7 @@ public class CardController : MonoBehaviour
         }
     }
 
-private void ExecuteGetCredit()
+    private void ExecuteGetCredit()
     {
         GameObject creditZone = GameObject.FindWithTag("CreditZone");
         GameObject targetSlot = GameObject.Find(currentTargetSlotName);
@@ -149,7 +185,6 @@ private void ExecuteGetCredit()
 
             creditCardCount++;
             
-            // 使用済みの学習カードも同様に地下へワープさせて安全に消す
             Collider myCol = GetComponent<Collider>();
             if (myCol != null) myCol.enabled = false;
             transform.position = new Vector3(0f, -1000f, 0f);

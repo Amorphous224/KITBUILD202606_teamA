@@ -10,7 +10,6 @@ public class SlotController : MonoBehaviour
         {
             if (CardController.SelectedCard.CurrentCardType == CardController.CardType.Study)
             {
-                // 置こうとしているカードを一時的にキープ
                 CardController placedCard = CardController.SelectedCard;
 
                 // 枚数に応じて少しずつずらして重ねる
@@ -25,10 +24,7 @@ public class SlotController : MonoBehaviour
 
                 Debug.Log($"スロット『{gameObject.name}』にカード配置完了 / 合計: {placedCardCount}枚");
 
-                // 💡 【新機能】置かれたカードに対して、選択肢を出すように直接命令する！
                 placedCard.TriggerUnitConfirmation(gameObject.name);
-
-                // 選択のクリアは命令の後に行う
                 CardController.ClearSelection();
             }
             else
@@ -36,5 +32,12 @@ public class SlotController : MonoBehaviour
                 Debug.LogWarning("単位カードの上には学習カードしか置けません");
             }
         }
+    }
+
+    // 🌟【新機能】Yを押して獲得したときに、重ねた枚数のカウントをゼロに戻す命令
+    public void ResetPlacedCount()
+    {
+        placedCardCount = 0;
+        Debug.Log($"スロット『{gameObject.name}』の重ねられた枚数カウントをリセットしました。");
     }
 }

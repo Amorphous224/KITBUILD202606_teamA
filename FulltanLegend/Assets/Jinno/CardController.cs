@@ -86,13 +86,10 @@ public class CardController : MonoBehaviour
     private void OnMouseDown()
     {
         // 🌟【絶対に画面移行させない修正】
-        // Destroy を使うとUnityエディタがバグってScene画面に飛ぶため、
-        // オブジェクトを画面外の遥か彼方にワープさせ、非アクティブにして物理的に消去します。
         if (isPlacedOnField)
         {
             Debug.Log($"場に出ていた効果カード『{textMeshPro.text}』を画面外へ除外しました。");
             
-            // 判定を消し、見えない地下へ飛ばして完全に無効化する
             Collider col = GetComponent<Collider>();
             if (col != null) col.enabled = false;
             
@@ -124,7 +121,7 @@ public class CardController : MonoBehaviour
         }
     }
 
-    private void ExecuteGetCredit()
+private void ExecuteGetCredit()
     {
         GameObject creditZone = GameObject.FindWithTag("CreditZone");
         GameObject targetSlot = GameObject.Find(currentTargetSlotName);
@@ -168,10 +165,8 @@ public class CardController : MonoBehaviour
 
     public static void ClearSelection() { SelectedCard = null; }
 
-    // シーン終了時に静的にクリアする処理のみ残す
     void OnDisable()
     {
-        // 全てのカードが非アクティブになったらカウンターをリセット
         CardController[] allCards = GameObject.FindObjectsByType<CardController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         bool anyActive = false;
         foreach (var c in allCards)

@@ -461,8 +461,27 @@ MonoBehaviour:
   textMeshPro: {fileID: 6446637661051406811}
   cardRenderer: {fileID: 8790664905817934599}
   imageRenderer: {fileID: 2599756484121382245}
-  cardImages:
-  - {fileID: 21300000, guid: 42a28c8687d85483086d743622e47182, type: 3}
+  studyCardImages:
+  - {fileID: 21300000, guid: e82f6133b075d40eaa7e3d6e17a5c03f, type: 3}
+  - {fileID: 21300000, guid: 7164f8610aa2443708a37f03e0eae1d4, type: 3}
+  - {fileID: 21300000, guid: d42d4cab6adec4c9d8a86042f7d3b6bc, type: 3}
+  - {fileID: 21300000, guid: 5de1b3588a13f49ff86c2f8442f59c98, type: 3}
+  - {fileID: 21300000, guid: 4ab95f9914ce64b88921b83062893eb5, type: 3}
+  - {fileID: 21300000, guid: f67591b48db334d2996790deaf8d35f2, type: 3}
+  - {fileID: 21300000, guid: 89467cb46d8014f52815e886b69cdd5b, type: 3}
+  - {fileID: 21300000, guid: 8ff3bca5742d14438a1da926615368cb, type: 3}
+  - {fileID: 21300000, guid: 8ee434db3766c40d790a52db98d431b0, type: 3}
+  effectCardImages:
+  - {fileID: 21300000, guid: 40a4d99115d804c2898cb14a058087e6, type: 3}
+  - {fileID: 21300000, guid: 42b0c66f4a1af4204ad91c0fced9cdfc, type: 3}
+  - {fileID: 21300000, guid: ed50bfdfc3b7343bfa51af709953966f, type: 3}
+  - {fileID: 21300000, guid: d0f5a94624ada42a9a2ad1716e82d9ee, type: 3}
+  - {fileID: 21300000, guid: 0ea2ed0f229cb4e72a4603419da2c125, type: 3}
+  - {fileID: 21300000, guid: 03c131674ddeb49d1b310e90581305fe, type: 3}
+  - {fileID: 21300000, guid: 3826fa7619e54407bb5e8759c548df6a, type: 3}
+  - {fileID: 21300000, guid: 3826fa7619e54407bb5e8759c548df6a, type: 3}
+  - {fileID: 21300000, guid: 0b92b17badb8946d894a0e9afee78b0c, type: 3}
+  - {fileID: 21300000, guid: 4ac96681ef35c4827b501cfddc2cdf88, type: 3}
 --- !u!114 &1415970068575968065
 MonoBehaviour:
   m_ObjectHideFlags: 0

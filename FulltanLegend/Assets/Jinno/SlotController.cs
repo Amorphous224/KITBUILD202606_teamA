@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class SlotController : MonoBehaviour
 {
-    private int placedCardCount = 0;
+    private int placedCardCount = 0; // スロットに重ねられたカードの枚数
 
     private void OnMouseDown()
     {
@@ -12,7 +12,7 @@ public class SlotController : MonoBehaviour
             {
                 CardController placedCard = CardController.SelectedCard;
 
-                // 枚数に応じて少しずつずらして重ねる
+                // 枚数に応じて少しずつ上にずらし、手前に重ねる計算
                 float heightOffset = 0.02f * placedCardCount;   
                 float forwardOffset = -0.01f * placedCardCount; 
                 
@@ -22,22 +22,16 @@ public class SlotController : MonoBehaviour
 
                 placedCardCount++;
 
-                Debug.Log($"スロット『{gameObject.name}』にカード配置完了 / 合計: {placedCardCount}枚");
-
+                // カード側に「このスロットに置かれたよ」と通知して確定モードへ
                 placedCard.TriggerUnitConfirmation(gameObject.name);
                 CardController.ClearSelection();
-            }
-            else
-            {
-                Debug.LogWarning("単位カードの上には学習カードしか置けません");
             }
         }
     }
 
-    // 🌟【新機能】Yを押して獲得したときに、重ねた枚数のカウントをゼロに戻す命令
+    // 単位を獲得したときなどに、重ねた枚数のカウントをゼロに戻す処理
     public void ResetPlacedCount()
     {
         placedCardCount = 0;
-        Debug.Log($"スロット『{gameObject.name}』の重ねられた枚数カウントをリセットしました。");
     }
 }

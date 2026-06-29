@@ -1,43 +1,35 @@
 using UnityEngine;
-using TMPro;
 using System.Collections.Generic;
 
 public class UnitCardController : MonoBehaviour
 {
-    [SerializeField] private TextMeshPro textMeshPro;
-    [SerializeField] private Renderer cardRenderer;
-    [SerializeField] private SpriteRenderer imageRenderer; 
-    [SerializeField] private List<Sprite> unitImages;      
+    [Header("表示用コンポーネント")]
+    [SerializeField] private Renderer cardRenderer;         // カードの土台の見た目
+    [SerializeField] private SpriteRenderer imageRenderer;   // カードのイラスト枠
 
-    // 大学の単位名の一覧
-    private string[] creditNames = new string[] 
-    {
-        "線形代数", "微分積分学", "英語総合", "プログラミング"
-    };
+    [Header("カードの素材データ")]
+    [SerializeField] private List<Sprite> unitImages;        // ランダム用の画像リスト
 
     void Start()
     {
-        // 最初もランダムにセットアップする
+        // 生まれた瞬間にランダムなイラストに変身する
         SetupRandomCard();
     }
 
-    // 🌟 外部から呼び出して、カードの名前と画像をランダムに新しく変更する機能
+    // 🌟 カードの画像をランダムに新しく変更する機能
     public void SetupRandomCard()
     {
-        // ランダムで単位の画像を1枚選択して表示
+        // 1. 画像のランダム決定
         if (imageRenderer != null && unitImages != null && unitImages.Count > 0)
         {
             int randomImageIndex = Random.Range(0, unitImages.Count);
             imageRenderer.sprite = unitImages[randomImageIndex];
         }
 
-        if (textMeshPro == null || cardRenderer == null) return;
+        // 安全チェック：カードの土台（Renderer）がなければここで終了
+        if (cardRenderer == null) return;
 
-        // ランダムで単位名を選択して表示
-        int randomIndex = Random.Range(0, creditNames.Length);
-        textMeshPro.text = creditNames[randomIndex];
-
-        // 単位カードの色を赤色に設定
+        // 2. 単位カードのベース色を赤色に染める
         cardRenderer.material.color = new Color(1.0f, 0.2f, 0.2f); 
     }
 }
